@@ -1,0 +1,643 @@
+# May need to install the following packages
+pip install html5lib
+pip install selenium
+
+# Load package needed to scrap the Data
+import requests
+import timeit
+import pandas as pd
+import numpy as np
+import sklearn as skl
+import os
+import random
+import time
+from bs4 import BeautifulSoup
+
+#Start Scraping the Data
+
+#Step 1: Create the URL for Team Stats
+
+# Creates the list of seasons to scrap
+seasons = [str(season) for season in range (2021, 2024)]
+print(f'number of seasons = {len(seasons)}')
+
+#Create the list of team abbreviations
+team_abbrs = ['atl','rav','buf','car','chi','cin','cle','dal',
+              'den','det','gnb','htx','clt','jax','kan','sdg','ram',
+              'rai','mia','min','nwe','nor','nyg','nyj','phi','pit','sea',
+             'sfo','tam','oti','was','crd']
+print(f'number of teams = {len(team_abbrs)}')
+
+urls = []
+
+for season in seasons:
+    for team in team_abbrs:
+        url = 'https://www.pro-football-reference.com/teams/'+team+'/'+season+'.htm'
+        urls.append(url)
+
+#So now how would you do this for all 32 of the NFL teams?
+#Create a pipeline
+#Step 2: Define the table Scraping function
+
+def table_scraper(urls):
+    try:
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        table = soup.find('table')
+        if table is None:
+            print(f'No table found on {url}')
+            return None
+        headers = [th.text for th in table.find("thead").find_all("th")]
+        headers = headers[12:]
+        data = []
+        for row in table.find("tbody").find_all("tr"):
+            data.append([td.text for td in row.find_all("td")])
+        df = pd.DataFrame(data, columns=headers)
+        df = df.drop([2, 3])
+        return df
+    except Exception as e:
+        print(f"Error scraping {url}: {e}")
+        return None
+
+#Step 3: Iterate over the set of web address
+start = time.time()
+Offensive_stats =[]
+Defensive_stats =[]
+
+for url in urls:
+    table = table_scraper(url)
+    time.sleep(random.randint(3,4)) #This is here to meet requirements from website - Max 20 inquires in a min
+    print(url) #Not required but allows you to keep track of where you are in the process
+    if table is not None:
+        Offensive_stats.append(table.iloc[[0]])
+        Defensive_stats.append(table.iloc[[1]])
+end = time.time()
+print(f"Execution time: {end - start:.6f} seconds")
+#Runtime approx. 40mins = 2410sec - this was 32 teams over 20 years
+
+# Step 4: Create 2 Data Frames containing the Offensive and defensive stats
+offensive_df = pd.concat(Offensive_stats, axis = 0)
+defensive_df = pd.concat(Defensive_stats, axis=0)
+
+
+# Next Team Conversion rates - This code will look remarkably similar to the code we wrote for team stats
+
+
+#Step 1: Urls are the same as for scraping the Statistics
+
+#Step 2: Define the table Scraping function
+
+def table_scraper(urls):
+    try:
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        table = soup.find('table', id = 'team_conversions')
+        if table is None:
+            print(f'No table found on {url}')
+            return None
+        headers = [th.text for th in table.find("thead").find_all("th")]
+        headers = headers[4:]
+        data = []
+        for row in table.find("tbody").find_all("tr"):
+            data.append([td.text for td in row.find_all("td")])
+        df = pd.DataFrame(data, columns=headers)
+        df = df.drop([2, 3])
+        return df
+    except Exception as e:
+        print(f"Error scraping {url}: {e}")
+        return None
+
+#Step 3: Iterate over the set of web address
+
+Offensive_conversions =[]
+Defensive_conversions =[]
+
+for url in urls:
+    table = table_scraper(url)
+    time.sleep(random.randint(3,4)) #This is here to meet requirements from website - Max 20 inquires in a min
+    print(url) #Not required but allows you to keep track of where you are in the process
+    if table is not None:
+        Offensive_conversions.append(table.iloc[[0]])
+        Defensive_conversions.append(table.iloc[[1]])
+
+print(f"Execution time: {end - start:.6f} seconds")
+#Took approx. 20 mins = 1217 sec
+
+# Step 4: Create 2 Data Frames containing the Offensive and defensive stats
+Offensive_conversions_df = pd.concat(Offensive_conversions, axis = 0)
+Defensive_conversions_df = pd.concat(Defensive_conversions, axis=0)
+
+
+# Scraping the NFL Team Wins / Losses/ Division Winner/Wildcard
+
+
+# NFL Standings website for bracket building
+# https://www.pro-football-reference.com/years/2023/ - pull AFC/NFC Playoff Standings
+
+#Step 1: Create the URL Season Playoff Standings
+
+# Creates the list of seasons to scrap
+seasons = [str(season) for season in range (2021, 2024)]
+print(f'number of seasons = {len(seasons)}')
+
+urls = []
+
+for season in seasons:
+    url = 'https://www.pro-football-reference.com/years/'+season+ '/'
+    urls.append(url)
+
+
+#Step 2: Define the table Scraping function
+
+def table_scraper(urls):
+    try:
+        page = requests.get(url)
+        soup = BeautifulSoup(page.text, 'html.parser')
+        table = soup.find('table', id = 'afc_playoff_standings')
+        if table is None:
+            print(f'No table found on {url}')
+            return None
+        headers = [th.text for th in table.find("thead").find_all("th")]
+        headers = headers[:]
+        data = []
+        for row in table.find("tbody").find_all("tr"):
+            data.append([td.text for td in row.find_all("td")])
+        df = pd.DataFrame(data, columns=headers)
+        df = df.drop([2, 3])
+        return df
+    except Exception as e:
+        print(f"Error scraping {url}: {e}")
+        return None
+
+
+AFC_Playoff_Teams = []
+
+for url in urls:
+    table = table_scraper(url)
+    time.sleep(random.randint(3,4)) #This is here to meet requirements from website - Max 20 inquires in a min
+    print(url) #Not required but allows you to keep track of where you are in the process
+    if table is not None:
+        AFC_Playoff_Teams.append(table)
+
+#Why were no tables found?  Check and see how many tables are being found
+url = "https://www.pro-football-reference.com/years/2023/"
+page = requests.get(url)
+
+soup = BeautifulSoup(page.content, 'html.parser')  # Use html.parser for parsing the HTML content
+
+# Check all tables and their ids
+tables = soup.find_all('table')
+for i, table in enumerate(tables):
+    print(f"Table {i}: ID = {table.get('id')}")
+
+# Now try to find the table by its id
+table = soup.find('table', id='afc_playoff_standings')
+
+print(table)
+
+# If table is found, you can proceed with further processing
+if table:
+    # Extract headers
+    headers = [header.text for header in table.find_all('th')]
+    print(headers)
+
+    # Extract rows
+    rows = table.find_all('tr')
+    for row in rows:
+        columns = row.find_all('td')
+        data = [column.text for column in columns]
+        print(data)
+else:
+    print("Table not found.")
+
+# Try find_all and see if it works
+
+url = "https://www.pro-football-reference.com/years/2023/"
+page = requests.get(url)
+
+soup = BeautifulSoup(page.content, 'html5lib')
+
+table = soup.find('table', id='afc_playoff_standings')
+
+print(table)
+
+if table:
+    headers = [header.text for header in table.find_all('th')]
+    print(headers)
+
+    rows = table.find_all('tr')
+    for row in rows:
+        columns = row.find_all('td')
+        data = [column.text for column in columns]
+        print(data)
+else:
+    print("Table not found.")
+
+# Only two tables are being found so try something else selenium
+
+# Probably need to change the name of some of these instead of redefining the same function over and over
+def table_scraper_selenium(urls):
+    # Set up the selenium WebDriver
+    driver = webdriver.Chrome()
+    driver.get(url)
+
+    # Let the page load completely
+    time.sleep(10)  # Wait for 10 seconds to ensure the page is fully loaded
+
+    # Parse the page content with BeautifulSoup
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+    # Now find the table
+    table = soup.find('table', id='afc_playoff_standings')
+    driver.quit()  # Close the browser
+
+    # Process the table as before
+    if table:
+        headers = [header.text for header in table.find_all('th')]
+        #print("Headers found:", headers)
+
+        # Extract additional headers starting from the 6th element onward
+        extra_headers = headers[6:]
+        #print("Extra headers:", extra_headers)
+
+        data = []
+        rows = table.find("tbody").find_all("tr")
+
+        for i, row in enumerate(rows):
+            cols = row.find_all("td")
+            row_data = [td.text.strip() for td in cols]
+
+            # Insert the corresponding extra header into the 'Tm' column
+            if i < len(extra_headers):
+                tm_data = extra_headers[i]
+            else:
+                tm_data = ""
+
+            row_data.insert(0, tm_data)
+            data.append(row_data)
+
+        # Define the correct headers for the DataFrame
+        correct_headers = ['Team', 'Wins', 'Losses', 'Ties', 'Seed', 'Reason']
+
+        # Adjust row_data to match correct_headers length
+        for i in range(len(data)):
+            if len(data[i]) < len(correct_headers):
+                data[i] = data[i] + [""] * (len(correct_headers) - len(data[i]))
+            elif len(data[i]) > len(correct_headers):
+                data[i] = data[i][:len(correct_headers)]
+
+        # Create the DataFrame only if there is data
+        if data:
+            df = pd.DataFrame(data, columns=correct_headers)
+            # Drop the last column of data
+            df = df.iloc[:, :-1]
+            # Keep only the first 6 rows
+            df = df.head(7)
+            # Update the 'Seed' column to be the index value + 1
+            df['Seed'] = df.index + 1
+            # Strip the (#) from the 'Team' column
+            df['Team'] = df['Team'].str.replace(r'\s*\(\d+\)', '', regex=True)
+            year = url.split('/')[-2]
+            df.insert(0,'Season', year)
+            print(df)
+            return(df)
+        else:
+            print("No data found in table.")
+    else:
+        print('Table not found.')
+
+AFC_Playoff_Teams = []
+
+for url in urls:
+    table = table_scraper_selenium(url)
+    time.sleep(random.randint(3,4)) #This is here to meet requirements from website - Max 20 inquires in a min
+    print(url) #Not required but allows you to keep track of where you are in the process
+    if table is not None:
+        AFC_Playoff_Teams.append(table)
+
+
+AFC_Playoff_Teams_df = pd.concat(AFC_Playoff_Teams, axis = 0)
+
+def table_scraper_selenium(urls):
+    # Set up the selenium WebDriver
+    driver = webdriver.Chrome()
+    driver.get(url)
+
+    # Let the page load completely
+    time.sleep(10)  # Wait for 10 seconds to ensure the page is fully loaded
+
+    # Parse the page content with BeautifulSoup
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+    # Now find the table
+    table = soup.find('table', id='nfc_playoff_standings')
+    driver.quit()  # Close the browser
+
+    # Process the table as before
+    if table:
+        headers = [header.text for header in table.find_all('th')]
+        print("Headers found:", headers)
+
+        # Extract additional headers starting from the 6th element onward
+        extra_headers = headers[7:]
+        print("Extra headers:", extra_headers)
+
+        data = []
+        rows = table.find("tbody").find_all("tr")
+
+        for i, row in enumerate(rows):
+            cols = row.find_all("td")
+            row_data = [td.text.strip() for td in cols]
+
+            # Insert the corresponding extra header into the 'Tm' column
+            if i < len(extra_headers):
+                tm_data = extra_headers[i]
+            else:
+                tm_data = ""
+
+            row_data.insert(0, tm_data)
+            data.append(row_data)
+
+        # Define the correct headers for the DataFrame
+        correct_headers = ['Team', 'Wins', 'Losses', 'Ties', 'Seed', 'Reason']
+
+        # Adjust row_data to match correct_headers length
+        for i in range(len(data)):
+            if len(data[i]) < len(correct_headers):
+                data[i] = data[i] + [""] * (len(correct_headers) - len(data[i]))
+            elif len(data[i]) > len(correct_headers):
+                data[i] = data[i][:len(correct_headers)]
+
+        # Create the DataFrame only if there is data
+        if data:
+            df = pd.DataFrame(data, columns=correct_headers)
+            # Drop the last column of data
+            df = df.iloc[:, :-1]
+            # Keep only the first 6 rows
+            df = df.head(7)
+            # Update the 'Seed' column to be the index value + 1
+            df['Seed'] = df.index + 1
+            # Strip the (#) from the 'Team' column
+            df['Team'] = df['Team'].str.replace(r'\s*\(\d+\)', '', regex=True)
+            year = url.split('/')[-2]
+            df.insert(0,'Season', year)
+            print(df)
+            return(df)
+        else:
+            print("No data found in table.")
+    else:
+        print('Table not found.')
+
+NFC_Playoff_Teams = []
+
+for url in urls:
+    table = table_scraper_selenium(url)
+    time.sleep(random.randint(3,4)) #This is here to meet requirements from website - Max 20 inquires in a min
+    print(url) #Not required but allows you to keep track of where you are in the process
+    if table is not None:
+        NFC_Playoff_Teams.append(table)
+0
+NFC_Playoff_Teams_df = pd.concat(NFC_Playoff_Teams, axis = 0)
+
+#Pull Playoff Results from 2021 to 2024
+
+def table_scraper_selenium(url):
+    # Extract the season year from the URL
+    season = url.split('/')[-2]
+
+    # Set up the selenium WebDriver
+    driver = webdriver.Chrome()
+    driver.get(url)
+
+    # Let the page load completely
+    time.sleep(10)  # Wait for 10 seconds to ensure the page is fully loaded
+
+    # Parse the page content with BeautifulSoup
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+    # Now find the table
+    table = soup.find('table', id='playoff_results')
+    driver.quit()  # Close the browser
+
+    # Process the table as before
+    if table:
+        headers = [header.text for header in table.find_all('th')]
+        print("Headers found:", headers)
+
+        # Extract additional headers starting from the 6th element onward
+        extra_headers = headers[9:]
+        print("Extra headers:", extra_headers)
+
+        data = []
+        rows = table.find("tbody").find_all("tr")
+
+        for i, row in enumerate(rows):
+            cols = row.find_all("td")
+            row_data = [td.text.strip() for td in cols]
+
+            # Insert the corresponding extra header into the 'Tm' column
+            if i < len(extra_headers):
+                tm_data = extra_headers[i]
+            else:
+                tm_data = ""
+
+            row_data.insert(0, tm_data)
+            data.append(row_data)
+
+        # Define the correct headers for the DataFrame
+        correct_headers = ['Round', 'Day', 'Date', 'Winner', 'Home / Away', 'Loser', 'Box Score', 'Winner Pts', 'Loser Pts']
+
+        # Adjust row_data to match correct_headers length
+        for i in range(len(data)):
+            if len(data[i]) < len(correct_headers):
+                data[i] = data[i] + [""] * (len(correct_headers) - len(data[i]))
+            elif len(data[i]) > len(correct_headers):
+                data[i] = data[i][:len(correct_headers)]
+
+        # Create the DataFrame only if there is data
+        if data:
+            df = pd.DataFrame(data, columns=correct_headers)
+            #Add column with the NFL Season
+            df.insert(0, 'Season', season)
+            #Drop Date and Box Score Columns
+            #df.drop('Date','Box Score')
+            print(df)
+            return df
+        else:
+            print("No data found in table.")
+            return None
+    else:
+        print('Table not found.')
+        return None
+
+# Example usage
+seasons = [str(season) for season in range(2021, 2024)]
+urls = ['https://www.pro-football-reference.com/years/' + season + '/' for season in seasons]
+
+Playoff_Results = []
+
+for url in urls:
+    table = table_scraper_selenium(url)
+    time.sleep(random.randint(3, 4))  # This is here to meet requirements from website - Max 20 inquires in a min
+    print(url)  # Not required but allows you to keep track of where you are in the process
+    if table is not None:
+        Playoff_Results.append(table)
+        Playoff_Results_df = pd.concat(Playoff_Results, axis = 0)
+
+Playoff_Results_df = pd.concat(Playoff_Results, axis = 0)
+
+# Finally a dataframe to help tie everthing together
+seasons = [str(season) for season in range (2021, 2024)]
+
+team_abbrs = ['atl','rav','buf','car','chi','cin','cle','dal',
+              'den','det','gnb','htx','clt','jax','kan','sdg','ram',
+              'rai','mia','min','nwe','nor','nyg','nyj','phi','pit','sea',
+             'sfo','tam','oti','was','crd']
+
+team_abbrs_to_names = {'atl':'Atlanta Falcons','rav':'Baltimore Ravens','buf': 'Buffalo Bills','car':'Carolina Panthers',
+                       'chi': 'Chicago Bears','cin': 'Cincinnati Bengals','cle':'Cleveland Browns','dal':'Dallas Cowboys',
+                       'den':'Denver Broncos','det':'Detroit Lions','gnb':'Green Bay Packers','htx':'Houston Texans',
+                       'clt':'Indianapolis Colts','jax':'Jacksonville Jaguars','kan':'Kansas City Chiefs','sdg':'Los Angeles Chargers',
+                       'ram':'Los Angeles Rams','rai':'Las Vegas Raiders','mia':'Miami Dolphins','min':'Minnesota Vikings',
+                       'nwe':'New England Patriots','nor':'New Orleans Saints','nyg':'New York Giants','nyj':'New York Jets',
+                       'phi':'Philadelphia Eagles','pit':'Pittsburgh Steelers','sea':'Seattle Seahawks','sfo':'San Francisco 49ers',
+                       'tam':'Tampa Bay Buccaneers','oti':'Tennessee Titans','was':'Washington Commanders','crd':'Arizona Cardinals'}
+
+# Create the list of dictionaries with seasons and team abbreviations
+season_team = []
+
+for season in seasons:
+    for team in team_abbrs:
+        season_team.append({'Season': season, 'Team': team})
+
+# Convert the list to a DataFrame
+season_team_df = pd.DataFrame(season_team)
+
+# Map the abbreviated team names to their full names
+season_team_df['Team_Full_Name'] = season_team_df['Team'].map(team_abbrs_to_names)
+
+
+# Data Cleaning and Formating
+
+
+#First we will save all DataFrames as CSVs before we start manipulating them so we don't have to rerun the whole code to get them back.
+# Export the DataFrame to a CSV file
+
+# Where I wanted my CSVs to be saved
+file_path = r'C:\Users\coltm\OneDrive\Documents\Academics\MSDS\DTSC 691 -'
+
+Playoff_Results_df.to_csv(f'{file_path}\\Playoff_Results.csv', index=False)
+NFC_Playoff_Teams_df.to_csv(f'{file_path}\\NFC_Playoff_Teams.csv', index=False)
+AFC_Playoff_Teams_df.to_csv(f'{file_path}\\AFC_Playoff_Teams.csv', index=False)
+Offensive_conversions_df.to_csv(f'{file_path}\\Offensive_conversions.csv', index=False)
+Defensive_conversions_df.to_csv(f'{file_path}\\Defensive_conversions.csv', index=False)
+offensive_df.to_csv(f'{file_path}\\Offensive_Statistics.csv', index=False)
+defensive_df.to_csv(f'{file_path}\\Defensive_Statistics.csv', index=False)
+
+# Restore DataFrames from this point
+
+file_path = r'C:\Users\coltm\OneDrive\Documents\Academics\MSDS\DTSC 691 -'# do not drop -
+
+# Read the CSV files into DataFrames
+Playoff_Results_df = pd.read_csv(f'{file_path}\\Playoff_Results.csv')
+NFC_Playoff_Teams_df = pd.read_csv(f'{file_path}\\NFC_Playoff_Teams.csv')
+AFC_Playoff_Teams_df = pd.read_csv(f'{file_path}\\AFC_Playoff_Teams.csv')
+Offensive_conversions_df = pd.read_csv(f'{file_path}\\Offensive_conversions.csv')
+Defensive_conversions_df = pd.read_csv(f'{file_path}\\Defensive_conversions.csv')
+offensive_df = pd.read_csv(f'{file_path}\\Offensive_Statistics.csv')
+defensive_df = pd.read_csv(f'{file_path}\\Defensive_Statistics.csv')
+
+Playoff_Results_df.drop(columns=['Date', 'Box Score'], inplace=True)
+Playoff_Results_df.reset_index(drop=True, inplace=True)
+
+# We will need to fill the Home / Away Columns and change the @ symbol to something for away teams
+# Modify the 'Home / Away' column based on the conditions
+Playoff_Results_df['Home / Away'] = Playoff_Results_df.apply(
+    lambda row: 'Neutral' if row['Round'] == 'SuperBowl' else ('Away' if row['Home / Away'] == '@' else 'Home'),
+    axis=1
+)
+# We want to do this so that the system can learn that the home team usually has an advantage, how much we don't know but
+#we want it to learn that.  For the Super Bowl we will drop the Home / Away score because it is a neutral site.
+
+NFC_Playoff_Teams_df.drop(columns=['Wins', 'Losses', 'Ties'], inplace=True)
+AFC_Playoff_Teams_df.drop(columns=['Wins', 'Losses', 'Ties'], inplace=True)
+
+Offensive_conversions_df.reset_index(drop=True, inplace=True)
+Offensive_conversions_df = pd.concat([season_team_df, Offensive_conversions_df], axis=1)
+Offensive_conversions_df.drop(columns=['3DAtt', '3DConv', '4DAtt', '4DConv', 'RZAtt', 'RZTD'], inplace=True)
+Defensive_conversions_df.reset_index(drop=True, inplace=True)
+Defensive_conversions_df = pd.concat([season_team_df, Defensive_conversions_df], axis=1)
+Defensive_conversions_df.drop(columns=['3DAtt', '3DConv', '4DAtt', '4DConv', 'RZAtt', 'RZTD'], inplace=True)
+offensive_df.reset_index(drop=True, inplace=True)
+offensive_df = pd.concat([season_team_df, offensive_df], axis=1)
+
+Off_New_Headers = ['Season', 'Team Abbrev', 'Team', 'Points Scored', 'Total Yards', 'Offensive Plays', 'Yards per Offensive Play',
+              'Team Turnovers Lost', 'Team Fumbles Lost', 'Total First Downs', 'Passes Completed', 'Pass Attempts', 'Yards Gained Passing',
+              'Passing Touchdowns', 'Interceptions Thrown','Yards per Pass', 'Passing First Downs', 'Rushing Attempts', 'Rushing Yards',
+              'Rushing Touchdowns', 'Yards per Rush','Rushing First Downs', '# of Penalties by Off','Total Penalty Yards','First Downs by Penalty',
+              'Number of Drives','Percentage of Scoring Drives','Percentage of Off Turnover Drives', 'AVG Starting Location', 'AVG Time per Drive',
+              'AVG # of Plays per Drive','Net Yards per Drive', 'AVG Points per Drive']
+offensive_df.columns = Off_New_Headers
+
+# Finally we need to split Own from the number value so it can be used in our algorithm.  We will then drop the Own
+offensive_df[['Starting Location', 'Starting Yardline']] = offensive_df['AVG Starting Location'].str.extract(r'(Own) (\d+\.\d+)')
+# Convert the 'Starting Yard' to numeric type
+offensive_df['Starting Yardline'] = pd.to_numeric(offensive_df['Starting Yardline'])
+# Drop the original 'AVG Starting Location' column if desired
+offensive_df.drop(columns=['AVG Starting Location','Starting Location'], inplace=True)
+
+# We will now do the same with defensive_df
+Def_New_Headers = ['Season', 'Team Abbrev', 'Team', 'Points Allowed', 'Total Yards Allowed', 'Defensive Plays', 'Yards Allowed per Offensive Play',
+              'Team Turnovers Gained', 'Team Fumbles Gained', 'Total First Downs Allowed', 'Passes Completed Against', 'Pass Attempts Against', 'Total Passing Yards Allowed',
+              'Passing Touchdowns Against', 'Interceptions Gained','Yards Allowed per Pass', 'Passing First Downs Allowed', 'Rushing Attempts Against', 'Total Rushing Yards Allowed',
+              'Rushing Touchdowns Allowed', 'Yards per Rushing Play Allowed','Rushing First Downs Allowed', '# of Penalties by Def','Total Penalty Yards','First Downs Given by Penalty',
+              'Number of Drives','Percentage of Scoring Drives Allowed','Percentage of Drives Ending By Turnover', 'AVG Starting Location', 'AVG Time On Field per Drive',
+              'AVG # of Plays per Drive','Net Yards Allowed per Drive', 'AVG Points Allowed per Drive']
+
+defensive_df.reset_index(drop=True, inplace=True)
+defensive_df = pd.concat([season_team_df, defensive_df], axis=1)
+defensive_df.columns = Def_New_Headers
+defensive_df[['Starting Location', 'Starting Yardline']] = defensive_df['AVG Starting Location'].str.extract(r'(Own) (\d+\.\d+)')
+    # Convert the 'Starting Yard' to numeric type
+defensive_df['Starting Yardline'] = pd.to_numeric(defensive_df['Starting Yardline'])
+    # Drop the original 'AVG Starting Location' column if desired
+defensive_df.drop(columns=['AVG Starting Location','Starting Location'], inplace=True)
+
+# Before we start to combine the data into working sets we need to make sure all dataframes have the same number of rows
+print("The defensive_df has shape:", defensive_df.shape)
+print("The offensive_df has shape:", offensive_df.shape)
+print("The Defensive_conversions_df has shape:", Defensive_conversions_df.shape)
+print("The Offensive_conversions_df has shape:", Offensive_conversions_df.shape)
+print("The AFC_Playoff_Teams_df has shape:", AFC_Playoff_Teams_df.shape)
+print("The NFC_Playoff_Teams_df has shape:", NFC_Playoff_Teams_df.shape)
+print("The Playoff_Results_df has shape:", Playoff_Results_df.shape)
+# Results are good as we don't need all the teams stats for the playoffs or playoffs
+
+# We are going to create a combined Stat and Conversion for both Offense and Defense to reference. This will allow us to reference the whole row of a spreadsheet for each and need to try and keep up with indexs. We would want to do this for when we run our Score predictor algorithm it will put one teams offense against the other teams defense, making it would would happen on the field.
+
+Combined_Offensive_Stats = pd.concat([offensive_df, Offensive_conversions_df], axis=1)
+Combined_Defensive_Stats = pd.concat([defensive_df, Defensive_conversions_df], axis=1)
+
+print("Duplicate columns:", Combined_Offensive_Stats.columns.duplicated().any())
+
+print("Number of duplicate columns:", Combined_Offensive_Stats.columns.duplicated().sum())
+
+Combined_Offensive_Stats = Combined_Offensive_Stats.loc[:, ~Combined_Offensive_Stats.columns.duplicated()]
+
+print("Duplicate columns:", Combined_Offensive_Stats.columns.duplicated().any())
+
+print("Number of duplicate columns:", Combined_Offensive_Stats.columns.duplicated().sum())
+
+print("Shape after dropping duplicates:", Combined_Offensive_Stats.shape)
+
+print("Duplicate columns:", Combined_Defensive_Stats.columns.duplicated().any())
+
+print("Number of duplicate columns:", Combined_Defensive_Stats.columns.duplicated().sum())
+
+Combined_Defensive_Stats = Combined_Defensive_Stats.loc[:, ~Combined_Defensive_Stats.columns.duplicated()]
+
+print("Duplicate columns:", Combined_Defensive_Stats.columns.duplicated().any())
+
+print("Number of duplicate columns:", Combined_Defensive_Stats.columns.duplicated().sum())
+
+print("Shape after dropping duplicates:", Combined_Defensive_Stats.shape)

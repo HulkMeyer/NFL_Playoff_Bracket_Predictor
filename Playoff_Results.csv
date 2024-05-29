@@ -1,0 +1,40 @@
+Season,Round,Winner,Loser,Winner Pts,Loser Pts,Day_Sat,Day_Sun,Home,Neutral
+2021,WildCard,Buffalo Bills,New England Patriots,47,17,1,0,1,0
+2021,WildCard,Cincinnati Bengals,Las Vegas Raiders,26,19,1,0,1,0
+2021,WildCard,Kansas City Chiefs,Pittsburgh Steelers,42,21,0,1,1,0
+2021,WildCard,San Francisco 49ers,Dallas Cowboys,23,17,0,1,0,0
+2021,WildCard,Tampa Bay Buccaneers,Philadelphia Eagles,31,15,0,1,1,0
+2021,WildCard,Los Angeles Rams,Arizona Cardinals,34,11,0,0,1,0
+2021,Division,Cincinnati Bengals,Tennessee Titans,19,16,1,0,0,0
+2021,Division,San Francisco 49ers,Green Bay Packers,13,10,1,0,0,0
+2021,Division,Kansas City Chiefs,Buffalo Bills,42,36,0,1,1,0
+2021,Division,Los Angeles Rams,Tampa Bay Buccaneers,30,27,0,1,0,0
+2021,ConfChamp,Cincinnati Bengals,Kansas City Chiefs,27,24,0,1,0,0
+2021,ConfChamp,Los Angeles Rams,San Francisco 49ers,20,17,0,1,1,0
+2021,SuperBowl,Los Angeles Rams,Cincinnati Bengals,23,20,0,1,0,1
+2022,WildCard,Jacksonville Jaguars,Los Angeles Chargers,31,30,1,0,1,0
+2022,WildCard,San Francisco 49ers,Seattle Seahawks,41,23,1,0,1,0
+2022,WildCard,Buffalo Bills,Miami Dolphins,34,31,0,1,1,0
+2022,WildCard,Cincinnati Bengals,Baltimore Ravens,24,17,0,1,1,0
+2022,WildCard,New York Giants,Minnesota Vikings,31,24,0,1,0,0
+2022,WildCard,Dallas Cowboys,Tampa Bay Buccaneers,31,14,0,0,0,0
+2022,Division,Kansas City Chiefs,Jacksonville Jaguars,27,20,1,0,1,0
+2022,Division,Philadelphia Eagles,New York Giants,38,7,1,0,1,0
+2022,Division,Cincinnati Bengals,Buffalo Bills,27,10,0,1,0,0
+2022,Division,San Francisco 49ers,Dallas Cowboys,19,12,0,1,1,0
+2022,ConfChamp,Kansas City Chiefs,Cincinnati Bengals,23,20,0,1,1,0
+2022,ConfChamp,Philadelphia Eagles,San Francisco 49ers,31,7,0,1,1,0
+2022,SuperBowl,Kansas City Chiefs,Philadelphia Eagles,38,35,0,1,0,1
+2023,WildCard,Houston Texans,Cleveland Browns,45,14,1,0,1,0
+2023,WildCard,Kansas City Chiefs,Miami Dolphins,26,7,1,0,1,0
+2023,WildCard,Detroit Lions,Los Angeles Rams,24,23,0,1,1,0
+2023,WildCard,Green Bay Packers,Dallas Cowboys,48,32,0,1,0,0
+2023,WildCard,Buffalo Bills,Pittsburgh Steelers,31,17,0,0,1,0
+2023,WildCard,Tampa Bay Buccaneers,Philadelphia Eagles,32,9,0,0,1,0
+2023,Division,Baltimore Ravens,Houston Texans,34,10,1,0,1,0
+2023,Division,San Francisco 49ers,Green Bay Packers,24,21,1,0,1,0
+2023,Division,Detroit Lions,Tampa Bay Buccaneers,31,23,0,1,1,0
+2023,Division,Kansas City Chiefs,Buffalo Bills,27,24,0,1,0,0
+2023,ConfChamp,San Francisco 49ers,Detroit Lions,34,31,0,1,1,0
+2023,ConfChamp,Kansas City Chiefs,Baltimore Ravens,17,10,0,1,0,0
+2023,SuperBowl,Kansas City Chiefs,San Francisco 49ers,25,22,0,1,0,1
